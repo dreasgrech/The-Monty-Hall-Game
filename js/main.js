@@ -1,5 +1,7 @@
 window.onload = function() {
-	var $viewport = $("#viewport"), canvas = document.getElementById('canvas'), $canvas = $(canvas);
+	var $viewport = $("#viewport"),
+	canvas = document.getElementById('canvas'),
+	$canvas = $(canvas);
 
 	$viewport.centerScreen();
 	if (!canvas.getContext) {
@@ -16,8 +18,11 @@ window.onload = function() {
 			cursor: function(type) {
 				document.body.style.cursor = type;
 			},
-			getMousePosition: function (e) {
-				return {x: e.pageX - $viewport[0].offsetLeft, y: e.pageY - $viewport[0].offsetTop};
+			getMousePosition: function(e) {
+				return {
+					x: e.pageX - $viewport[0].offsetLeft,
+					y: e.pageY - $viewport[0].offsetTop
+				};
 			},
 			clearCanvas: function() {
 				ctx.canvas.width = ctx.canvas.width;
@@ -47,7 +52,9 @@ window.onload = function() {
 		car: "img/car.png",
 		switchquestion: "img/switchquestion.png",
 		noanswer: "img/no.png",
-		yesanswer: "img/yes.png"
+		yesanswer: "img/yes.png",
+		won: "img/won.png",
+		lost: "img/lost.png",
 	});
 
 	images.load(function(imageList) {
@@ -66,7 +73,7 @@ window.onload = function() {
 				door.reset();
 			});
 		},
-		startNewGame = function () {
+		startNewGame = function() {
 			reset();
 			currentGame = game();
 		},
@@ -78,7 +85,7 @@ window.onload = function() {
 				}
 			},
 			results = [],
-			wins = 0;
+			wins = 0, textY = utils.HEIGHT - 40;
 
 			return {
 				addResult: function(won, switchedDoor) {
@@ -86,6 +93,14 @@ window.onload = function() {
 					if (won) {
 						wins++;
 					}
+				},
+				draw: function() {
+					context.fillStyle = "rgb(94, 147, 10)";
+					context.font = "28pt sans-serif";
+					context.fillText("Played: " + results.length, 70, textY);
+					context.fillText("Wins: " + wins, 340, textY);
+					context.fillText("Losses: " + (results.length - wins), 570, textY);
+
 				}
 			};
 		} ()),
@@ -162,7 +177,7 @@ window.onload = function() {
 				door.draw();
 			});
 			switchQuestion.draw();
-
+			statistics.draw();
 		},
 		step = function() {
 			update();
@@ -242,8 +257,8 @@ window.onload = function() {
 						prize.drive();
 
 						statistics.addResult(door === winningDoor, initialGuessDoor !== door)
-							switchQuestion.hide();
-							switchQuestion.hideAnswers();
+						switchQuestion.hide();
+						switchQuestion.hideAnswers();
 						state = 'finishedgame';
 					}
 				},
@@ -277,7 +292,8 @@ window.onload = function() {
 				return;
 			}
 
-			var mousePos = utils.getMousePosition(e), door = utils.forEach(doors, function(door) {
+			var mousePos = utils.getMousePosition(e),
+			door = utils.forEach(doors, function(door) {
 				if (door.isMouseOver(mousePos.x, mousePos.y)) {
 					return door;
 				}
@@ -289,7 +305,8 @@ window.onload = function() {
 		});
 
 		$viewport.mousemove(function(e) {
-			var mousePos = utils.getMousePosition(e), isMouseOnDoor;
+			var mousePos = utils.getMousePosition(e),
+			isMouseOnDoor;
 			utils.forEach(doors, function(door) {
 				//if (door.isMouseOver(e.offsetX, e.offsetY)) {
 				if (door.isMouseOver(mousePos.x, mousePos.y)) {
