@@ -56,9 +56,14 @@ window.onload = function() {
 		}),
 		reset = function() {
 			goats = [];
+			prize = undefined;
 			utils.forEach(doors, function(door) {
 				door.close();
 			});
+		},
+		startNewGame = function () {
+			reset();
+			currentGame = game();
 		},
 		statistics = (function() {
 			var result = function(won, switchedDoor) {
@@ -166,8 +171,7 @@ window.onload = function() {
 				}
 			});
 		},
-		getRemainingDoor = function (door1, door2) {
-			console.log(door1.id(), door2.id());
+		getRemainingDoor = function(door1, door2) {
 			return getDoorById((door1.id() + door2.id()) ^ 0x7);
 		},
 		game = function() {
@@ -212,7 +216,7 @@ window.onload = function() {
 					return state;
 				},
 				clickDoor: function(door) {
-						   var beast;
+					var beast;
 					if (state === 'guess') {
 						takeInitialGuess(door);
 					} else if (state === 'switchdoor') {
@@ -220,7 +224,8 @@ window.onload = function() {
 							return;
 						}
 
-						var unselectedDoor = getRemainingDoor(door, montysOpenedDoor), otherGoatDoor = unselectedDoor !== winningDoor ? unselectedDoor : door;
+						var unselectedDoor = getRemainingDoor(door, montysOpenedDoor),
+						otherGoatDoor = unselectedDoor !== winningDoor ? unselectedDoor: door;
 						otherGoatDoor.open();
 
 						beast = otherGoatDoor.spawnGoat();
@@ -230,6 +235,12 @@ window.onload = function() {
 						winningDoor.open();
 						prize = winningDoor.spawnCar();
 						prize.drive();
+
+						statistics.addResult(door === winningDoor, initialGuessDoor !== door)
+
+						state = 'finishedgame';
+					} else if (state === 'finishedgame') {
+
 					}
 				},
 				hoveringOnDoor: function(door) {
@@ -254,9 +265,14 @@ window.onload = function() {
 
 		setInterval(step, 30);
 
-		currentGame = game();
+		startNewGame();
 
 		canvas.onclick = function(e) {
+			if (currentGame.state() === 'finishedgame') {
+				startNewGame();
+				return;
+			}
+
 			var door = utils.forEach(doors, function(door) {
 				if (door.isMouseOver(e.offsetX, e.offsetY)) {
 					return door;
