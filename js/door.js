@@ -6,25 +6,37 @@ var boundingBox = function(pos, width, height) {
 	};
 };
 
-var door = function(utils, position, imageList) {
+var door = function(id, utils, position, imageList) {
 	var openImage = image(utils.context, imageList.opendoor, position),
 	closedImage = image(utils.context, imageList.closeddoor, position),
+	selectedClosedImage = image(utils.context, imageList.selectedcloseddoor, position),
 	state = closedImage,
 	bounds,
 	open = function() {
+		isOpened = true;
 		state = openImage;
 	},
 	close = function() {
+		isOpened = false;
 		state = closedImage;
-	};
+	},
+	isSelected,
+	isOpened;
 
 	bounds = boundingBox(position, closedImage.width(), closedImage.height());
 
 	return {
+		id: function() {
+			return id;
+		},
 		open: open,
 		close: close,
 		toggle: function() {
 			state === openImage ? close() : open();
+		},
+		select: function() {
+			state = selectedClosedImage;
+			isSelected = true;
 		},
 		draw: function() {
 			state.draw();
@@ -33,7 +45,28 @@ var door = function(utils, position, imageList) {
 			return bounds.isInBox(mouseX, mouseY);
 		},
 		spawnGoat: function() {
-			return goat(utils.context, {x: position.x, y: position.y + closedImage.height()}, imageList.goat);
+			return goat(utils.context, {
+				x: position.x,
+				y: position.y + closedImage.height()
+			},
+			imageList.goat);
+		},
+		spawnCar: function() {
+			return car(utils.context, {
+				x: position.x,
+				y: position.y + closedImage.height()
+			},
+			imageList.car);
+		},
+		isSelected: function() {
+			return isSelected;
+		},
+		isOpened: function() {
+			return isOpened;
+		},
+		reset: function() {
+			close();
+			isSelected = false;
 		}
 	};
 };

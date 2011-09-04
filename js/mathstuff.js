@@ -4,6 +4,9 @@ var mathStuff = (function() {
 	};
 
 	return {
+		random: function (from, to) {
+			return Math.floor(from + Math.random() * (to - from + 1));
+		},
 		lerp: lerp,
 		cos: function(from, to, w) {
 			return lerp(from, to, ( - Math.cos(Math.PI * w)));
