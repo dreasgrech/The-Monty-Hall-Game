@@ -4,25 +4,19 @@ window.onload = function() {
 		alert("Your browser does not support the canvas");
 		return;
 	}
+
 	var context = canvas.getContext('2d'),
-	WIDTH = 800,
-	HEIGHT = 600,
 	utils = (function(ctx) {
 		return {
 			context: ctx,
-			/*
-			drawImageOnCanvas: function(img, x, y) {
-				ctx.drawImage(img, x, y);
-			},*/
+			WIDTH: 800,
+			HEIGHT: 600,
 			cursor: function(type) {
 				document.body.style.cursor = type;
 			},
 			clearCanvas: function() {
 				ctx.canvas.width = ctx.canvas.width;
 				ctx.canvas.height = ctx.canvas.height;
-			},
-			getCursorPosition: function(e) {
-
 			},
 			forEach: function(list, callback) {
 				var i = 0,
@@ -44,7 +38,10 @@ window.onload = function() {
 		closeddoor: "img/closeddoor.png",
 		selectedcloseddoor: "img/selectedcloseddoor.png",
 		goat: "img/goat.png",
-		car: "img/car.png"
+		car: "img/car.png",
+		switchquestion: "img/switchquestion.png",
+		noanswer: "img/no.png",
+		yesanswer: "img/yes.png"
 	});
 
 	images.load(function(imageList) {
@@ -98,9 +95,10 @@ window.onload = function() {
 		}),
 		doors = [],
 		goats = [],
+		switchQuestion = question(utils, imageList),
 		titles = (function(ctx) {
 			var im = image(ctx, imageList.title, {
-				x: (WIDTH / 2) - (710 / 2),
+				x: (utils.WIDTH / 2) - (710 / 2),
 				y: - 91
 			}),
 			isAnimating,
@@ -145,6 +143,7 @@ window.onload = function() {
 			utils.forEach(doors, function(door) {
 				door.draw();
 			});
+			switchQuestion.draw();
 
 		},
 		step = function() {
@@ -152,16 +151,17 @@ window.onload = function() {
 			draw();
 		},
 		currentGame,
-		getDoorById = function (id) {
-			return utils.forEach(doors, function (door) {
-					if (door.id() === id) {
-						return door;
-					}
+		getDoorById = function(id) {
+			return utils.forEach(doors, function(door) {
+				if (door.id() === id) {
+					return door;
+				}
 			});
 		},
 		game = function() {
-			var chooseDoor = function(door) {
-				var remainingDoor, beast;
+			var initialGuessDoor, montysOpenedDoor, takeInitialGuess = function(door) {
+				var beast;
+				initialGuessDoor = door;
 
 				door.select();
 				if (door.id() == winningDoor.id()) { // The player chose the winning door, so randomly one of the two remaining doors which now both contain goats
@@ -178,17 +178,25 @@ window.onload = function() {
 						remainingDoors.push(0x2);
 					}
 
-					remainingDoor = getDoorById(remainingDoors[mathStuff.random(0,1)]);
+					montysOpenedDoor = getDoorById(remainingDoors[mathStuff.random(0, 1)]);
 				} else { // The player chose a non-winning door, so open the other door that contains a goat
-					remainingDoor = getDoorById((door.id() + winningDoor.id()) ^ 0x7);
+					montysOpenedDoor = getDoorById((door.id() + winningDoor.id()) ^ 0x7);
 				}
 
-				beast = remainingDoor.spawnGoat();
+				beast = montysOpenedDoor.spawnGoat();
 				goats.push(beast);
-				remainingDoor.open();
+				montysOpenedDoor.open();
 				beast.peek();
 
 				state = 'switchdoor';
+				switchQuestion.show();
+			},
+			clickDoor = function(door) {
+				if (state === 'guess') {
+					takeInitialGuess(door);
+				} else if (state === 'switchdoor') {
+
+				}
 			},
 			state = 'guess',
 			winningDoor = doors[mathStuff.random(0, 2)];
@@ -198,20 +206,24 @@ window.onload = function() {
 				state: function() {
 					return state;
 				},
-				chooseDoor: chooseDoor
+				clickDoor: clickDoor,
+				hoveringOnDoor: function(door) {
+					if (state === 'switchdoor') {
+						if (door === initialGuessDoor) {
+							switchQuestion.showNoAnswer();
+						} else if (door !== montysOpenedDoor) {
+							switchQuestion.showYesAnswer();
+						}
+					}
+				}
 			};
 
 		};
 
+		switchQuestion.hide();
 		doors.push(leftDoor);
 		doors.push(middleDoor);
 		doors.push(rightDoor);
-
-		/*
-		rightDoor.open();
-		goats.push(rightDoor.spawnGoat());
-		goats[0].peek();
-		*/
 
 		titles.show();
 
@@ -228,7 +240,7 @@ window.onload = function() {
 
 			if (door) {
 				if (currentGame.state() === 'guess') {
-					currentGame.chooseDoor(door);
+					currentGame.clickDoor(door);
 				}
 			}
 		};
@@ -236,10 +248,16 @@ window.onload = function() {
 		canvas.onmousemove = function(e) {
 			var isMouseOnDoor;
 			utils.forEach(doors, function(door) {
-				if (!door.isOpened() && door.isMouseOver(e.offsetX, e.offsetY)) {
-					return isMouseOnDoor = true;
+				if (door.isMouseOver(e.offsetX, e.offsetY)) {
+					currentGame.hoveringOnDoor(door);
+					if (!door.isOpened()) {
+						return isMouseOnDoor = true;
+					}
 				}
 			});
+			if (!isMouseOnDoor) {
+					switchQuestion.hideAnswers();
+			}
 
 			utils.cursor(isMouseOnDoor ? 'pointer': 'default');
 		};
