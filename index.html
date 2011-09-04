@@ -2,9 +2,12 @@
 <html>
 <head>
 <title>The Monty Hall game</title>
+<link rel="stylesheet" type="text/css" href="css/main.css" />
 </head>
 
 <body>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+	<script src="js/jquery.centerscreen.packed.js"></script>
 	<script src="js/mathstuff.js"></script>
 	<script src="js/imageManager.js"></script>
 	<script src="js/image.js"></script>
@@ -13,7 +16,9 @@
 	<script src="js/door.js"></script>
 	<script src="js/goat.js"></script>
 	<script src="js/car.js"></script>
-	<canvas id="canvas" width="800" height="600" style="border:1px solid black"></canvas>
+	<div id="viewport">
+		<canvas id="canvas" width="800" height="600"></canvas>
+	</div>
 </body>
 
 </html>

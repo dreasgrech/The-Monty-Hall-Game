@@ -1,5 +1,7 @@
 window.onload = function() {
-	var canvas = document.getElementById('canvas');
+	var $viewport = $("#viewport"), canvas = document.getElementById('canvas'), $canvas = $(canvas);
+
+	$viewport.centerScreen();
 	if (!canvas.getContext) {
 		alert("Your browser does not support the canvas");
 		return;
@@ -13,6 +15,9 @@ window.onload = function() {
 			HEIGHT: 600,
 			cursor: function(type) {
 				document.body.style.cursor = type;
+			},
+			getMousePosition: function (e) {
+				return {x: e.pageX - $viewport[0].offsetLeft, y: e.pageY - $viewport[0].offsetTop};
 			},
 			clearCanvas: function() {
 				ctx.canvas.width = ctx.canvas.width;
@@ -58,7 +63,7 @@ window.onload = function() {
 			goats = [];
 			prize = undefined;
 			utils.forEach(doors, function(door) {
-				door.close();
+				door.reset();
 			});
 		},
 		startNewGame = function () {
@@ -237,10 +242,9 @@ window.onload = function() {
 						prize.drive();
 
 						statistics.addResult(door === winningDoor, initialGuessDoor !== door)
-
+							switchQuestion.hide();
+							switchQuestion.hideAnswers();
 						state = 'finishedgame';
-					} else if (state === 'finishedgame') {
-
 					}
 				},
 				hoveringOnDoor: function(door) {
@@ -267,14 +271,14 @@ window.onload = function() {
 
 		startNewGame();
 
-		canvas.onclick = function(e) {
+		$viewport.click(function(e) {
 			if (currentGame.state() === 'finishedgame') {
 				startNewGame();
 				return;
 			}
 
-			var door = utils.forEach(doors, function(door) {
-				if (door.isMouseOver(e.offsetX, e.offsetY)) {
+			var mousePos = utils.getMousePosition(e), door = utils.forEach(doors, function(door) {
+				if (door.isMouseOver(mousePos.x, mousePos.y)) {
 					return door;
 				}
 			});
@@ -282,12 +286,13 @@ window.onload = function() {
 			if (door) {
 				currentGame.clickDoor(door);
 			}
-		};
+		});
 
-		canvas.onmousemove = function(e) {
-			var isMouseOnDoor;
+		$viewport.mousemove(function(e) {
+			var mousePos = utils.getMousePosition(e), isMouseOnDoor;
 			utils.forEach(doors, function(door) {
-				if (door.isMouseOver(e.offsetX, e.offsetY)) {
+				//if (door.isMouseOver(e.offsetX, e.offsetY)) {
+				if (door.isMouseOver(mousePos.x, mousePos.y)) {
 					currentGame.hoveringOnDoor(door);
 					if (!door.isOpened()) {
 						return isMouseOnDoor = true;
@@ -299,7 +304,7 @@ window.onload = function() {
 			}
 
 			utils.cursor(isMouseOnDoor ? 'pointer': 'default');
-		};
+		});
 
 	});
 
