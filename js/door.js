@@ -7,25 +7,18 @@ var boundingBox = function(pos, width, height) {
 };
 
 var door = function(utils, position) {
-	var openImage = new Image(),
-	closedImage = new Image(),
+	var openImage = image(utils.context, 'img/opendoor.png', position),
+	closedImage = image(utils.context, 'img/closeddoor.png', position),
 	state = closedImage,
-	width,
-	height,
 	bounds,
-	open = function () {
-			state = openImage;
+	open = function() {
+		state = openImage;
 	},
-	close = function () {
-			state = closedImage;
+	close = function() {
+		state = closedImage;
 	};
 
-	openImage.src = "img/opendoor.png";
-	closedImage.src = "img/closeddoor.png";
-
-	width = closedImage.width;
-	height = closedImage.height;
-	bounds = boundingBox(position, width, height);
+	bounds = boundingBox(position, closedImage.width(), closedImage.height());
 
 	return {
 		open: open,
@@ -34,10 +27,13 @@ var door = function(utils, position) {
 			state === openImage ? close() : open();
 		},
 		draw: function() {
-			utils.drawImageOnCanvas(state, position.x, position.y);
+			state.draw();
 		},
 		isMouseOver: function(mouseX, mouseY) {
 			return bounds.isInBox(mouseX, mouseY);
+		},
+		spawnGoat: function() {
+			return goat(utils.context, {x: position.x, y: position.y + closedImage.height()});
 		}
 	};
 };
