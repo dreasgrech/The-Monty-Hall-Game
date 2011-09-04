@@ -6,9 +6,9 @@ var boundingBox = function(pos, width, height) {
 	};
 };
 
-var door = function(utils, position) {
-	var openImage = image(utils.context, 'img/opendoor.png', position),
-	closedImage = image(utils.context, 'img/closeddoor.png', position),
+var door = function(utils, position, imageList) {
+	var openImage = image(utils.context, imageList.opendoor, position),
+	closedImage = image(utils.context, imageList.closeddoor, position),
 	state = closedImage,
 	bounds,
 	open = function() {
@@ -33,7 +33,7 @@ var door = function(utils, position) {
 			return bounds.isInBox(mouseX, mouseY);
 		},
 		spawnGoat: function() {
-			return goat(utils.context, {x: position.x, y: position.y + closedImage.height()});
+			return goat(utils.context, {x: position.x, y: position.y + closedImage.height()}, imageList.goat);
 		}
 	};
 };

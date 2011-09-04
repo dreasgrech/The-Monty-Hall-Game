@@ -1,5 +1,5 @@
-var goat = function(ctx, position) {
-	var im = image(ctx, "img/goat.png", position),
+var goat = function(ctx, position, goatImage) {
+	var im = image(ctx, goatImage, position),
 	isPeeking,
 	lValue = 0;
 
