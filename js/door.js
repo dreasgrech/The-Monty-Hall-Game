@@ -10,11 +10,12 @@ var door = function(id, utils, position, imageList) {
 	var openImage = image(utils.context, imageList.opendoor, position),
 	closedImage = image(utils.context, imageList.closeddoor, position),
 	selectedClosedImage = image(utils.context, imageList.selectedcloseddoor, position),
+	selectedOpenImage = image(utils.context, imageList.selectedopendoor, position),
 	state = closedImage,
 	bounds,
 	open = function() {
 		isOpened = true;
-		state = openImage;
+		state = isSelected ? selectedOpenImage : openImage;
 	},
 	close = function() {
 		isOpened = false;
@@ -53,8 +54,8 @@ var door = function(id, utils, position, imageList) {
 		},
 		spawnCar: function() {
 			return car(utils.context, {
-				x: position.x,
-				y: position.y + closedImage.height()
+				x: position.x + closedImage.width(),
+				y: position.y + closedImage.height() - imageList.car.height
 			},
 			imageList.car);
 		},

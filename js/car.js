@@ -1,18 +1,18 @@
 var car = function(ctx, position, carImage) {
-	var im = image(ctx, goatImage, position),
+	var im = image(ctx, carImage, position),
 	isDriving,
 	lValue = 0;
 
 	return {
 		update: function() {
 			if (isDriving) {
-				var x = mathStuff.smoothstep(im.initialPosition().x, im.initialPosition().y - 100, lValue);
-				lValue += 0.05;
+				var x = mathStuff.smoothstep(im.initialPosition().x, im.initialPosition().x - im.width(), lValue);
+				lValue += 0.03;
 				if (lValue > 1) {
 					lValue = 0;
 					isDriving = false;
 				}
-				im.setPosition(im.position().x, y);
+				im.setPosition(x, im.position().y);
 			}
 		},
 		draw: function() {

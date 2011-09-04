@@ -37,6 +37,7 @@ window.onload = function() {
 		opendoor: "img/opendoor.png",
 		closeddoor: "img/closeddoor.png",
 		selectedcloseddoor: "img/selectedcloseddoor.png",
+		selectedopendoor: "img/selectedopendoor.png",
 		goat: "img/goat.png",
 		car: "img/car.png",
 		switchquestion: "img/switchquestion.png",
@@ -95,6 +96,7 @@ window.onload = function() {
 		}),
 		doors = [],
 		goats = [],
+		prize,
 		switchQuestion = question(utils, imageList),
 		titles = (function(ctx) {
 			var im = image(ctx, imageList.title, {
@@ -111,7 +113,7 @@ window.onload = function() {
 				update: function() {
 					var y;
 					if (isAnimating) {
-						y = mathStuff.smoothstep(im.initialPosition().y, 40, lValue);
+						y = mathStuff.smoothstep(im.initialPosition().y, 35, lValue);
 						lValue += 0.05;
 						if (lValue > 1) {
 							isAnimating = false;
@@ -130,6 +132,9 @@ window.onload = function() {
 			utils.forEach(goats, function(goat) {
 				goat.update();
 			});
+			if (prize) {
+				prize.update();
+			}
 			titles.update();
 		},
 		draw = function() {
@@ -138,6 +143,9 @@ window.onload = function() {
 			utils.forEach(goats, function(goat) {
 				goat.draw();
 			});
+			if (prize) {
+				prize.draw();
+			}
 			setImage.draw();
 			titles.draw();
 			utils.forEach(doors, function(door) {
@@ -157,6 +165,10 @@ window.onload = function() {
 					return door;
 				}
 			});
+		},
+		getRemainingDoor = function (door1, door2) {
+			console.log(door1.id(), door2.id());
+			return getDoorById((door1.id() + door2.id()) ^ 0x7);
 		},
 		game = function() {
 			var initialGuessDoor, montysOpenedDoor, takeInitialGuess = function(door) {
@@ -180,7 +192,7 @@ window.onload = function() {
 
 					montysOpenedDoor = getDoorById(remainingDoors[mathStuff.random(0, 1)]);
 				} else { // The player chose a non-winning door, so open the other door that contains a goat
-					montysOpenedDoor = getDoorById((door.id() + winningDoor.id()) ^ 0x7);
+					montysOpenedDoor = getRemainingDoor(door, winningDoor);
 				}
 
 				beast = montysOpenedDoor.spawnGoat();
@@ -191,13 +203,6 @@ window.onload = function() {
 				state = 'switchdoor';
 				switchQuestion.show();
 			},
-			clickDoor = function(door) {
-				if (state === 'guess') {
-					takeInitialGuess(door);
-				} else if (state === 'switchdoor') {
-
-				}
-			},
 			state = 'guess',
 			winningDoor = doors[mathStuff.random(0, 2)];
 			console.log('Winning Door', winningDoor.id());
@@ -206,7 +211,27 @@ window.onload = function() {
 				state: function() {
 					return state;
 				},
-				clickDoor: clickDoor,
+				clickDoor: function(door) {
+						   var beast;
+					if (state === 'guess') {
+						takeInitialGuess(door);
+					} else if (state === 'switchdoor') {
+						if (door === montysOpenedDoor) {
+							return;
+						}
+
+						var unselectedDoor = getRemainingDoor(door, montysOpenedDoor), otherGoatDoor = unselectedDoor !== winningDoor ? unselectedDoor : door;
+						otherGoatDoor.open();
+
+						beast = otherGoatDoor.spawnGoat();
+						goats.push(beast);
+						beast.peek();
+
+						winningDoor.open();
+						prize = winningDoor.spawnCar();
+						prize.drive();
+					}
+				},
 				hoveringOnDoor: function(door) {
 					if (state === 'switchdoor') {
 						if (door === initialGuessDoor) {
@@ -239,9 +264,7 @@ window.onload = function() {
 			});
 
 			if (door) {
-				if (currentGame.state() === 'guess') {
-					currentGame.clickDoor(door);
-				}
+				currentGame.clickDoor(door);
 			}
 		};
 
@@ -256,7 +279,7 @@ window.onload = function() {
 				}
 			});
 			if (!isMouseOnDoor) {
-					switchQuestion.hideAnswers();
+				switchQuestion.hideAnswers();
 			}
 
 			utils.cursor(isMouseOnDoor ? 'pointer': 'default');
