@@ -72,6 +72,7 @@ window.onload = function() {
 			utils.forEach(doors, function(door) {
 				door.reset();
 			});
+			currentGameResult = undefined;
 		},
 		startNewGame = function() {
 			reset();
@@ -85,7 +86,8 @@ window.onload = function() {
 				}
 			},
 			results = [],
-			wins = 0, textY = utils.HEIGHT - 40;
+			wins = 0,
+			textY = utils.HEIGHT - 40;
 
 			return {
 				addResult: function(won, switchedDoor) {
@@ -161,6 +163,9 @@ window.onload = function() {
 				prize.update();
 			}
 			titles.update();
+			if (currentGameResult) {
+				currentGameResult.update();
+			}
 		},
 		draw = function() {
 			utils.clearCanvas();
@@ -178,6 +183,9 @@ window.onload = function() {
 			});
 			switchQuestion.draw();
 			statistics.draw();
+			if (currentGameResult) {
+				currentGameResult.draw();
+			}
 		},
 		step = function() {
 			update();
@@ -194,6 +202,28 @@ window.onload = function() {
 		getRemainingDoor = function(door1, door2) {
 			return getDoorById((door1.id() + door2.id()) ^ 0x7);
 		},
+		gameResult = function(img) {
+			var position = {x: utils.WIDTH / 2 - (img.width / 2), y: 130}, im = image(context, img, position);
+
+			return {
+				show: function() {
+				      im.show();
+				},
+				hide: function() {
+				      im.hide();
+				},
+				update: function() {
+
+				},
+				draw: function() {
+				      im.draw();
+				}
+
+			};
+		},
+		wonGameResult = gameResult(imageList.won),
+		lostGameResult = gameResult(imageList.lost),
+		currentGameResult,
 		game = function() {
 			var initialGuessDoor, montysOpenedDoor, takeInitialGuess = function(door) {
 				var beast;
@@ -245,7 +275,9 @@ window.onload = function() {
 						}
 
 						var unselectedDoor = getRemainingDoor(door, montysOpenedDoor),
-						otherGoatDoor = unselectedDoor !== winningDoor ? unselectedDoor: door;
+						otherGoatDoor = unselectedDoor !== winningDoor ? unselectedDoor: door,
+						won = door === winningDoor;
+
 						otherGoatDoor.open();
 
 						beast = otherGoatDoor.spawnGoat();
@@ -256,7 +288,8 @@ window.onload = function() {
 						prize = winningDoor.spawnCar();
 						prize.drive();
 
-						statistics.addResult(door === winningDoor, initialGuessDoor !== door)
+						statistics.addResult(won, initialGuessDoor !== door)
+						currentGameResult = won ? wonGameResult : lostGameResult;
 						switchQuestion.hide();
 						switchQuestion.hideAnswers();
 						state = 'finishedgame';
