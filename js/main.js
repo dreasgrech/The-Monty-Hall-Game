@@ -72,7 +72,7 @@ window.onload = function() {
 			utils.forEach(doors, function(door) {
 				door.reset();
 			});
-			currentGameResult = undefined;
+			//currentGameResult = undefined;
 		},
 		startNewGame = function() {
 			reset();
@@ -202,27 +202,8 @@ window.onload = function() {
 		getRemainingDoor = function(door1, door2) {
 			return getDoorById((door1.id() + door2.id()) ^ 0x7);
 		},
-		gameResult = function(img) {
-			var position = {x: utils.WIDTH / 2 - (img.width / 2), y: 130}, im = image(context, img, position);
-
-			return {
-				show: function() {
-				      im.show();
-				},
-				hide: function() {
-				      im.hide();
-				},
-				update: function() {
-
-				},
-				draw: function() {
-				      im.draw();
-				}
-
-			};
-		},
-		wonGameResult = gameResult(imageList.won),
-		lostGameResult = gameResult(imageList.lost),
+		wonGameResult = gameResult(utils, imageList.won),
+		lostGameResult = gameResult(utils, imageList.lost),
 		currentGameResult,
 		game = function() {
 			var initialGuessDoor, montysOpenedDoor, takeInitialGuess = function(door) {
@@ -259,7 +240,6 @@ window.onload = function() {
 			},
 			state = 'guess',
 			winningDoor = doors[mathStuff.random(0, 2)];
-			console.log('Winning Door', winningDoor.id());
 
 			return {
 				state: function() {
@@ -289,7 +269,8 @@ window.onload = function() {
 						prize.drive();
 
 						statistics.addResult(won, initialGuessDoor !== door)
-						currentGameResult = won ? wonGameResult : lostGameResult;
+						currentGameResult = won ? wonGameResult: lostGameResult;
+						currentGameResult.enter();
 						switchQuestion.hide();
 						switchQuestion.hideAnswers();
 						state = 'finishedgame';
@@ -321,6 +302,7 @@ window.onload = function() {
 
 		$viewport.click(function(e) {
 			if (currentGame.state() === 'finishedgame') {
+			currentGameResult.leave();
 				startNewGame();
 				return;
 			}
