@@ -72,36 +72,38 @@ window.onload = function() {
 			utils.forEach(doors, function(door) {
 				door.reset();
 			});
-			//currentGameResult = undefined;
 		},
 		startNewGame = function() {
 			reset();
 			currentGame = game();
 		},
 		statistics = (function() {
-			var result = function(won, switchedDoor) {
-				return {
-					won: won,
-					switchedDoor: switchedDoor
-				}
-			},
-			results = [],
+			var total = 0,
 			wins = 0,
-			textY = utils.HEIGHT - 40;
+			switches = 0,
+			col1X = 230,
+			col2X = col1X + 250,
+			row1Y = utils.HEIGHT - 60,
+			row2Y = row1Y + 30;
 
 			return {
 				addResult: function(won, switchedDoor) {
-					results.push(result(won, switchedDoor));
+					total++;
 					if (won) {
 						wins++;
+					}
+
+					if (switchedDoor) {
+						switches++;
 					}
 				},
 				draw: function() {
 					context.fillStyle = "rgb(94, 147, 10)";
-					context.font = "28pt sans-serif";
-					context.fillText("Played: " + results.length, 70, textY);
-					context.fillText("Wins: " + wins, 340, textY);
-					context.fillText("Losses: " + (results.length - wins), 570, textY);
+					context.font = "20pt sans-serif";
+					context.fillText("Played: " + total, col1X, row1Y);
+					context.fillText("Switched: " + switches, col1X, row2Y);
+					context.fillText("Won: " + wins, col2X, row1Y);
+					context.fillText("Lost: " + (total - wins), col2X, row2Y);
 
 				}
 			};
@@ -323,7 +325,6 @@ window.onload = function() {
 			var mousePos = utils.getMousePosition(e),
 			isMouseOnDoor;
 			utils.forEach(doors, function(door) {
-				//if (door.isMouseOver(e.offsetX, e.offsetY)) {
 				if (door.isMouseOver(mousePos.x, mousePos.y)) {
 					currentGame.hoveringOnDoor(door);
 					if (!door.isOpened()) {
